@@ -306,13 +306,24 @@ public:
 			// This means that when any pin is turn to output it will output a 0 and pull lines low (ie an activation state on the IEC bus)
 			// Note: on the IEC bus you never output a 1 you simply tri state and it will be pulled up to a 1 (ie inactive state on the IEC bus) if no one else is pulling it low.
 
-			//myOutsGPFSEL0 = read32(ARM_GPIO_GPFSEL0);
-			//myOutsGPFSEL1 = read32(ARM_GPIO_GPFSEL1);
 
-			//myOutsGPFSEL1 |= (1 << ((PIGPIO_OUT_LED - 10) * 3));
-			//myOutsGPFSEL1 |= (1 << ((PIGPIO_OUT_SOUND - 10) * 3));
-			RPI_SetGpioPinFunction((rpi_gpio_pin_t)PIGPIO_OUT_SOUND, FS_OUTPUT);
-			RPI_SetGpioPinFunction((rpi_gpio_pin_t)PIGPIO_OUT_LED, FS_OUTPUT);
+					// A recent GPIO change for Raspberry Pi Zero (RPI0) altered LED and SOUND
+					// pin initialisation. While correct for RPI0, this caused a regression on
+					// RPI2 and RPI3 in the IEC open-drain path, leaving LED and SOUND misconfigured.
+					//
+					// To avoid reverting the RPI0 fix, RPI2/RPI3 restore the previous behaviour
+					// by configuring the affected GPIOs via direct GPFSEL access.
+
+				#if defined(RPI2) || defined(RPI3)
+					myOutsGPFSEL0 = read32(ARM_GPIO_GPFSEL0);
+					myOutsGPFSEL1 = read32(ARM_GPIO_GPFSEL1);
+
+					myOutsGPFSEL1 |= (1 << ((PIGPIO_OUT_LED - 10) * 3));
+					myOutsGPFSEL1 |= (1 << ((PIGPIO_OUT_SOUND - 10) * 3));
+				#else
+					RPI_SetGpioPinFunction((rpi_gpio_pin_t)PIGPIO_OUT_SOUND, FS_OUTPUT);
+					RPI_SetGpioPinFunction((rpi_gpio_pin_t)PIGPIO_OUT_LED, FS_OUTPUT);
+				#endif
 		}
 		else
 		{
