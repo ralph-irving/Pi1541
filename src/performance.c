@@ -1,6 +1,7 @@
 // Part of PiTubeDirect
 // https://github.com/hoglet67/PiTubeDirect
 #include <stdio.h>
+#include <sys/types.h>
 #include <inttypes.h>
 #include <string.h>
 #include "startup.h"
